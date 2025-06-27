@@ -4,6 +4,8 @@ import com.example.lecturer_availability_module.DTO.LecturerDTO;
 import com.example.lecturer_availability_module.IService.ILecturerService;
 import io.micronaut.http.annotation.*;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 
 @Controller("/lecturers")
@@ -38,4 +40,13 @@ public class LecturerController {
     public LecturerDTO getLecturerByName(@PathVariable String name) {
         return lecturerService.getLecturerByName(name);
     }
+
+    /**
+     * Get all available lecturers
+     */
+    @Get("/available")
+    public List<LecturerDTO> getAvailableLecturers(@QueryValue DayOfWeek day, @QueryValue LocalTime time) {
+        return lecturerService.getAvailableLecturers(day, time);
+    }
+
 }

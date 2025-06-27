@@ -5,6 +5,7 @@ import com.example.lecturer_availability_module.DTO.ScheduleDTO;
 import com.example.lecturer_availability_module.Entity.LecturerEntity;
 import com.example.lecturer_availability_module.Entity.ScheduleEntry;
 import com.example.lecturer_availability_module.LecturerRepo;
+import com.example.lecturer_availability_module.ScheduleRepo;
 import jakarta.inject.Singleton;
 
 import java.time.*;
@@ -15,9 +16,11 @@ import java.util.stream.Collectors;
 @Singleton
 public class LecturerServiceImpl implements ILecturerService{
     private final LecturerRepo lecturerRepo;
+    private final ScheduleRepo scheduleRepo;
 
-    public LecturerServiceImpl(LecturerRepo lecturerRepo) {
+    public LecturerServiceImpl(LecturerRepo lecturerRepo, ScheduleRepo scheduleRepo) {
         this.lecturerRepo = lecturerRepo;
+        this.scheduleRepo = scheduleRepo;
     }
 
     @Override
@@ -147,5 +150,45 @@ public class LecturerServiceImpl implements ILecturerService{
         }).collect(Collectors.toList());
 
         return lecturerDTO;
+    }
+
+    @Override
+    public List<LecturerDTO> getAvailableLecturers(DayOfWeek dayhe, LocalTime time) {
+        String day = dayhe.name();
+        List<LecturerEntity> availableLecturers = scheduleRepo.findAvailableLecturers(day, time);
+        return availableLecturers.stream().map(l -> {
+            LecturerDTO dto = new LecturerDTO();
+            dto.name = l.getName();
+            dto.department = l.getDepartment();
+            dto.officeBuilding = l.getOfficeBuilding();
+            dto.officeNumber = l.getOfficeNumber();
+            dto.email = l.getEmail();
+
+            dto.schedule = l.getSchedule().stream().map(s -> {
+                boolean isToday = s.getDay().equalsIgnoreCase(day);
+                LocalTime start = s.getStartTime();
+                LocalTime end = s.getEndTime();
+
+                boolean isNow = isToday && !time.isBefore(start) && !time.isAfter(end);
+                Long mins = null;
+                String nextAt = null;
+
+                if (isToday && time.isBefore(start)) {
+                    mins = Duration.between(time, start).toMinutes();
+                    nextAt = start.toString();
+                }
+
+                return new ScheduleDTO(
+                        s.getDay(),
+                        start.toString(),
+                        end.toString(),
+                        isNow,
+                        mins,
+                        nextAt
+                );
+            }).collect(Collectors.toList());
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 }
