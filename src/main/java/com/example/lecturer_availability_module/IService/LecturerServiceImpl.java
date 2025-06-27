@@ -64,6 +64,42 @@ public class LecturerServiceImpl implements ILecturerService{
     }
 
     @Override
+    public LecturerDTO addScheduleToLecturer(String name, ScheduleDTO newScheduleDTO) {
+        LecturerEntity lecturer = lecturerRepo.findByNameIgnoreCase(name)
+                .orElseThrow(() -> new RuntimeException("Lecturer not found: " + name));
+
+        ScheduleEntry entry = new ScheduleEntry();
+        entry.setDay(newScheduleDTO.getDay());
+        entry.setStartTime(LocalTime.parse(newScheduleDTO.getStartTime()));
+        entry.setEndTime(LocalTime.parse(newScheduleDTO.getEndTime()));
+        entry.setLecturer(lecturer);
+
+        lecturer.getSchedule().add(entry);
+
+        LecturerEntity updated = lecturerRepo.update(lecturer); // triggers cascade
+
+        // Map to DTO inside
+        LecturerDTO dto = new LecturerDTO();
+        dto.setName(updated.getName());
+        dto.setDepartment(updated.getDepartment());
+        dto.setOfficeBuilding(updated.getOfficeBuilding());
+        dto.setOfficeNumber(updated.getOfficeNumber());
+        dto.setEmail(updated.getEmail());
+
+        dto.setSchedule(updated.getSchedule().stream().map(s -> new ScheduleDTO(
+                s.getDay(),
+                s.getStartTime().toString(),
+                s.getEndTime().toString(),
+                false,
+                null,
+                null
+        )).collect(Collectors.toList()));
+
+        return dto;
+    }
+
+
+    @Override
     public List<LecturerDTO> getAllLecturers() {
         List<LecturerEntity> lecturers = lecturerRepo.findAllWithSchedule();
 
@@ -191,4 +227,38 @@ public class LecturerServiceImpl implements ILecturerService{
             return dto;
         }).collect(Collectors.toList());
     }
+
+    @Override
+    public LecturerDTO removeScheduleFromLecturer(String name, ScheduleDTO toRemoveDTO) {
+        LecturerEntity lecturer = lecturerRepo.findByNameIgnoreCase(name)
+                .orElseThrow(() -> new RuntimeException("Lecturer not found: " + name));
+
+        List<ScheduleEntry> remaining = lecturer.getSchedule().stream()
+                .filter(s -> !(s.getDay().equalsIgnoreCase(toRemoveDTO.getDay()) &&
+                        s.getStartTime().equals(LocalTime.parse(toRemoveDTO.getStartTime())) &&
+                        s.getEndTime().equals(LocalTime.parse(toRemoveDTO.getEndTime()))))
+                .collect(Collectors.toList());
+
+        lecturer.setSchedule(remaining);
+        LecturerEntity updated = lecturerRepo.update(lecturer);
+
+        LecturerDTO dto = new LecturerDTO();
+        dto.setName(updated.getName());
+        dto.setDepartment(updated.getDepartment());
+        dto.setOfficeBuilding(updated.getOfficeBuilding());
+        dto.setOfficeNumber(updated.getOfficeNumber());
+        dto.setEmail(updated.getEmail());
+
+        dto.setSchedule(updated.getSchedule().stream().map(s -> new ScheduleDTO(
+                s.getDay(),
+                s.getStartTime().toString(),
+                s.getEndTime().toString(),
+                false,
+                null,
+                null
+        )).collect(Collectors.toList()));
+
+        return dto;
+    }
+
 }

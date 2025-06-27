@@ -1,6 +1,7 @@
 package com.example.lecturer_availability_module.Controller;
 
 import com.example.lecturer_availability_module.DTO.LecturerDTO;
+import com.example.lecturer_availability_module.DTO.ScheduleDTO;
 import com.example.lecturer_availability_module.IService.ILecturerService;
 import io.micronaut.http.annotation.*;
 
@@ -24,6 +25,23 @@ public class LecturerController {
     public LecturerDTO createLecturer(@Body LecturerDTO dto) {
         return lecturerService.createLecturer(dto);
     }
+
+    /**
+     * Add to lecturer schedule
+     */
+    @Post("/{name}/schedule/add")
+    public LecturerDTO addSchedule(@PathVariable String name, @Body ScheduleDTO scheduleDTO) {
+        return lecturerService.addScheduleToLecturer(name, scheduleDTO);
+    }
+
+    /**
+     * Remove from lecturer schedule
+     */
+    @Post("/{name}/schedule/remove")
+    public LecturerDTO removeSchedule(@PathVariable String name, @Body ScheduleDTO scheduleDTO) {
+        return lecturerService.removeScheduleFromLecturer(name, scheduleDTO);
+    }
+
 
     /**
      * Get all lecturers and their availability
