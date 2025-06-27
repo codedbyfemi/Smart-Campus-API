@@ -23,6 +23,6 @@ public class LecturerEntity {
     private String officeBuilding;
     private String officeNumber;
 
-    @OneToMany(mappedBy = "lecturer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "lecturer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ScheduleEntry> schedule = new ArrayList<>();
 }
