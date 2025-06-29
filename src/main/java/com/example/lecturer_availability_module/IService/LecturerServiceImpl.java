@@ -47,6 +47,8 @@ public class LecturerServiceImpl implements ILecturerService {
         lecturer.setName(dto.name);
         lecturer.setDepartment(dto.department);
         lecturer.setEmail(dto.email);
+        lecturer.setOfficeBuilding(dto.officeBuilding);
+        lecturer.setOfficeNumber(dto.officeNumber);
 
         // Populate ScheduleEntry list from ScheduleDTOs
         for (ScheduleDTO s : dto.schedule) {
@@ -67,6 +69,8 @@ public class LecturerServiceImpl implements ILecturerService {
         result.name = saved.getName();
         result.department = saved.getDepartment();
         result.email = saved.getEmail();
+        result.officeBuilding = saved.getOfficeBuilding();
+        result.officeNumber = saved.getOfficeNumber();
 
         // Use Java Stream API to convert list of ScheduleEntry to ScheduleDTO
         result.schedule = saved.getSchedule().stream().map(entry -> new ScheduleDTO(
